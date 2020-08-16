@@ -7,6 +7,12 @@ pipeline {
                   sh 'tidy -q -e *.html'
               }
          }
+
+         stage('Build Docker') {
+            steps {
+                sh "docker build --tag=my-capston-image ."
+            }
+        }
        
      }    
   }
