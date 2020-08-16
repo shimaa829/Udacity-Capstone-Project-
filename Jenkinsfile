@@ -2,7 +2,7 @@ pipeline {
      agent any
      stages {
         
-         stage('Lint HTML') {
+         stage('Lint') {
               steps {
                   sh 'tidy -q -e *.html'
               }
