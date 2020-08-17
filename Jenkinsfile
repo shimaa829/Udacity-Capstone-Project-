@@ -30,6 +30,14 @@ pipeline {
                 }
             }
         }
+        stage('Deploy K8S') {
+            steps {
+                withAWS(credentials: 'aws-access', region: 'us-west-2') {
+                    sh './cloudformation/create.sh MyCapstoneStack-Shimaa cloudformation/capstone_infrastructure.yml cloudformation/infra_parameters.json'
+                 
+                }
+            }
+        }
        
      }    
   }
