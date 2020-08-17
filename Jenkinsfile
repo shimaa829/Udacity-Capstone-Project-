@@ -14,11 +14,21 @@ pipeline {
               }
          }
 
-         stage('Build Docker') {
+         stage('Docker Build') {
             steps {
                   script {
                      dockerImage = docker.build('${registry}/${dockerImage}:${dockerVersion}')
                     }
+             }
+        }
+        stage('Docker Push') {
+            steps {
+                script {
+              
+                    docker.withRegistry('', '${registryCredential}') {
+                        dockerImage.push()
+                    }
+                }
             }
         }
        
