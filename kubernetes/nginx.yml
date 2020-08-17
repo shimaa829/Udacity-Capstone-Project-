@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: shimaa96/capston-image
+        image: shimaa96/capston-image:latest
         resources:
           requests:
             memory: "64Mi"
@@ -24,6 +24,12 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 80
+          strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 1
+  minReadySeconds: 10
 
 
 

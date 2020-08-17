@@ -1,0 +1,177 @@
+Description: >
+    Shimaa Abd El Azim / Udacity Capstone Project
+    This template is for Final Project  in the Udacity DevOps Engineer Nanodegree
+
+Parameters:
+
+    EnvironmentName:
+        Description: An environment name that will be prefixed to resource names
+        Type: String
+
+    VpcCIDR: 
+        Description: CIDR for this VPC
+        Type: String
+        Default: 10.0.0.0/16
+
+    PublicSubnetCIDR:
+        Description: CIDR for the public subnet in the first Availability Zone
+        Type: String
+        Default: 10.0.0.0/24
+
+Resources:
+
+    VPC: 
+        Type: AWS::EC2::VPC
+        Properties:
+            CidrBlock: !Ref VpcCIDR
+            EnableDnsHostnames: true
+            Tags: 
+                - Key: Name 
+                  Value: !Sub Shimaa_VPC_${EnvironmentName}
+
+    InternetGateway:
+        Type: AWS::EC2::InternetGateway
+        Properties:
+            Tags:
+                - Key: Name
+                  Value: !Ref EnvironmentName
+            
+    InternetGatewayAttachment:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+            InternetGatewayId: !Ref InternetGateway
+            VpcId: !Ref VPC
+    
+    PublicSubnet: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 0, !GetAZs '' ]
+            CidrBlock: !Ref PublicSubnetCIDR
+            MapPublicIpOnLaunch: true
+            Tags: 
+                - Key: Name 
+                  Value: !Sub shimaa-${EnvironmentName} Public Subnet (AZ1)
+
+    
+    PublicRT:
+        Type: AWS::EC2::RouteTable
+        Properties: 
+            VpcId: !Ref VPC
+            Tags: 
+                - Key: Name 
+                  Value: !Sub shimaa-${EnvironmentName} Public Routes
+
+    DefaultPublicRoute: 
+        Type: AWS::EC2::Route
+        DependsOn: InternetGatewayAttachment
+        Properties: 
+            RouteTableId: !Ref PublicRT
+            DestinationCidrBlock: 0.0.0.0/0
+            GatewayId: !Ref InternetGateway
+
+    PublicSubRTAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: !Ref PublicRT
+            SubnetId: !Ref PublicSubnet
+
+
+
+    WebServerSG:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Allow http to our hosts and SSH from local only
+            VpcId: !Ref VPC
+            SecurityGroupIngress:
+            - IpProtocol: tcp
+              FromPort: 0
+              ToPort: 65535
+              CidrIp: 0.0.0.0/0
+
+            SecurityGroupEgress:
+            - IpProtocol: tcp
+              FromPort: 0
+              ToPort: 65535
+              CidrIp: 0.0.0.0/0
+
+    WebAppLaunchConfig:
+        Type: AWS::AutoScaling::LaunchConfiguration
+        Properties:
+            UserData:
+                Fn::Base64: !Sub |
+                    #!/bin/bash
+                    sudo apt-get update -y
+                    curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+                    chmod +x ./kubectl
+                    sudo mv ./kubectl /usr/local/bin/kubectl
+                    sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+                    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic test"
+                    sudo apt-get update -y
+                    sudo apt install docker-ce -y
+                    sudo usermod -aG docker ubuntu
+                    sudo chmod 666 /var/run/docker.sock
+                    sudo systemctl start docker
+                    sudo systemctl enable docker
+                    curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+                    sudo minikube start
+                    git clone https://github.com/shimaa829/Udacity-Capstone-Project-.git
+                    kubectl apply -f Udacity-Capstone-Project-/kubernetes/nginx.yml
+                    kubectl apply -f Udacity-Capstone-Project-/kubernetes/service.yml
+
+            ImageId: ami-003634241a8fcdec0 
+            KeyName: "my_key_pair"
+            SecurityGroups:
+               - !Ref WebServerSG
+            InstanceType: t3.small 
+            BlockDeviceMappings:
+                - DeviceName: "/dev/sdk"
+                  Ebs:
+                      VolumeSize: '10'
+
+    WebAppTG:
+        Type: AWS::ElasticLoadBalancingV2::TargetGroup
+        Properties:
+            HealthCheckIntervalSeconds: 10
+            HealthCheckPath: /
+            HealthCheckProtocol: HTTP
+            HealthCheckTimeoutSeconds: 8
+            HealthyThresholdCount: 2
+            Port: 80
+            Protocol: HTTP
+            UnhealthyThresholdCount: 5
+            VpcId: !Ref VPC
+
+    WebAppASG:
+        Type: AWS::AutoScaling::AutoScalingGroup
+        Properties:
+            VPCZoneIdentifier:
+              - !Ref PublicSubnet
+            LaunchConfigurationName:
+                !Ref WebAppLaunchConfig
+            MinSize: '1'
+            MaxSize: '1'
+            TargetGroupARNs:
+              - Ref: WebAppTG
+
+
+Outputs: 
+
+    VPC: 
+        Description: A reference to the created VPC
+        Value: !Ref VPC
+        Export:
+          Name: !Sub ${EnvironmentName}-VPCID
+
+    PublicRouteTable:
+        Description: Public Routing
+        Value: !Ref PublicRT
+        Export:
+          Name: !Sub ${EnvironmentName}-PUB-RT
+
+    PublicSubnet:
+        Description: A reference to the public subnet in the 1st Availability Zone
+        Value: !Ref PublicSubnet
+        Export:
+          Name: !Sub ${EnvironmentName}-PUB1-SN
