@@ -1,4 +1,10 @@
 pipeline {
+     environment {
+	    registry = "shimaa96/capston-image"
+            dockerVersion = 'latest'
+	    registryCredential = 'dockerhub_access'
+	    dockerImage = ''
+     }
      agent any
      stages {
         
@@ -10,7 +16,9 @@ pipeline {
 
          stage('Build Docker') {
             steps {
-                sh "docker build --tag=my-capston-image ."
+                  script {
+                     dockerImage = docker.build registry + :dockerVersion
+                    }
             }
         }
        
