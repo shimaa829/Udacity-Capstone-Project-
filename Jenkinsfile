@@ -2,7 +2,6 @@ pipeline {
      environment {
 	    registry = "shimaa96"
             dockerVersion = 'latest'
-	    registryCredential = 'dockerhub_access'
 	    dockerImage = 'capston-image'
      }
      agent any
@@ -25,7 +24,7 @@ pipeline {
             steps {
                 script {
               
-                    docker.withRegistry('', '${registryCredential}') {
+                    docker.withRegistry('', 'dockerhub_access') {
                         dockerImage.push()
                     }
                 }
