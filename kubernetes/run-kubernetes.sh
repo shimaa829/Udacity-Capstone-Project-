@@ -1,5 +1,5 @@
 # run deployment file
-kubectl apply -f kubernetes/nginx.yml
+kubectl apply -f kubernetes/deployment.yml
 kubectl apply -f kubernetes/service.yml
 
 
