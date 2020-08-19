@@ -24,6 +24,7 @@ Resources:
         Type: AWS::EC2::VPC
         Properties:
             CidrBlock: !Ref VpcCIDR
+            EnableDnsSupport: true
             EnableDnsHostnames: true
             Tags: 
                 - Key: Name 
@@ -124,7 +125,7 @@ Resources:
             KeyName: "my_key_pair"
             SecurityGroups:
                - !Ref WebServerSG
-            InstanceType: t3.small 
+            InstanceType: t3.medium 
             BlockDeviceMappings:
                 - DeviceName: "/dev/sdk"
                   Ebs:
@@ -133,7 +134,7 @@ Resources:
     WebAppTG:
         Type: AWS::ElasticLoadBalancingV2::TargetGroup
         Properties:
-            HealthCheckIntervalSeconds: 10
+            HealthCheckIntervalSeconds: 100
             HealthCheckPath: /
             HealthCheckProtocol: HTTP
             HealthCheckTimeoutSeconds: 8
@@ -148,10 +149,9 @@ Resources:
         Properties:
             VPCZoneIdentifier:
               - !Ref PublicSubnet
-            LaunchConfigurationName:
-                !Ref WebAppLaunchConfig
-            MinSize: '1'
-            MaxSize: '1'
+            LaunchConfigurationName: !Ref WebAppLaunchConfig
+            MinSize: 1
+            MaxSize: 1
             TargetGroupARNs:
               - Ref: WebAppTG
 

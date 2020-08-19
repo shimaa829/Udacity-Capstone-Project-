@@ -1,7 +1,7 @@
 pipeline {
      environment {
 	    registry = "shimaa96"
-            dockerVersion = 'latest'
+        dockerVersion = 'latest'
 	    dockerImage = 'capston-image'
      }
      agent any
@@ -33,7 +33,8 @@ pipeline {
         stage('Deploy K8S') {
             steps {
                 withAWS(credentials: 'aws-access', region: 'us-west-2') {
-                    sh './cloudformation/create.sh MyCapstoneStack cloudformation/capstone_infrastructure.yml cloudformation/infra_parameters.json'
+                    sh 'cd cloudformation'
+                    sh './create.sh CapstoneStack capstone_infrastructure.yml infra_parameters.json'
                  
                 }
             }
