@@ -14,7 +14,7 @@ pipeline {
          }
          stage("Lint Dockerfile") {
 			steps {
-				sh "docker run --rm -i hadolint/hadolint:v1.17.5 < Dockerfile"
+				sh "docker run --rm -i hadolint/hadolint:latest < Dockerfile"
 			}
 		 }
 
@@ -45,7 +45,7 @@ pipeline {
             }
         }
 
-        stage('K8S Deploy') {
+        stage('K8S Deployment') {
             steps {
                         sh './kubernetes/run_kubernetes.sh'
                       
