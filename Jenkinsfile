@@ -47,6 +47,7 @@ pipeline {
 
         stage('K8S Deployment') {
             steps {
+                        sh 'su -i'
                         sh './kubernetes/run-kubernetes.sh'
                       
             }
