@@ -39,7 +39,7 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-access', region: 'us-east-1') {
  
-                    sh './cloudformation/create.sh K8sCapstoneStack2 cloudformation/K8s_infrastructure.yml cloudformation/infra_parameters.json'
+                    sh './cloudformation/create.sh K8sCapstoneStack3 cloudformation/K8s_infrastructure.yml cloudformation/infra_parameters.json'
                  
                 }
             }
@@ -48,7 +48,8 @@ pipeline {
         stage('K8S Deployment') {
             steps {
                 
-                        sh'./kubernetes/run-kubernetes.sh'
+                        sh'kubectl apply -f kubernetes/deployment.yml'
+                        sh'kubectl apply -f kubernetes/service.yml'
                 
                       
             }
