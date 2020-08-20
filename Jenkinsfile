@@ -7,11 +7,16 @@ pipeline {
      agent any
      stages {
         
-         stage('Lint') {
+         stage('Lint HTML') {
               steps {
                   sh 'tidy -q -e *.html'
               }
          }
+         stage("Lint Dockerfile") {
+			steps {
+				sh "docker run --rm -i hadolint/hadolint:v1.17.5 < Dockerfile"
+			}
+		 }
 
          stage('Docker Build') {
             steps {
@@ -30,7 +35,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy K8S') {
+        stage('Deploy infrastructure') {
             steps {
                 withAWS(credentials: 'aws-access', region: 'us-east-1') {
  
@@ -39,6 +44,14 @@ pipeline {
                 }
             }
         }
+
+        stage('K8S Deploy') {
+            steps {
+                        sh './kubernetes/run_kubernetes.sh'
+                      
+            }
+       }
+    
        
      }    
   }
