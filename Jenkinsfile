@@ -39,7 +39,7 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-access', region: 'us-east-1') {
  
-                    sh './cloudformation/create.sh K8sCapstoneStack cloudformation/K8s_infrastructure.yml cloudformation/infra_parameters.json'
+                    sh './cloudformation/create.sh K8sCapstoneStack1 cloudformation/K8s_infrastructure.yml cloudformation/infra_parameters.json'
                  
                 }
             }
