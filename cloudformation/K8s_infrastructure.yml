@@ -120,8 +120,8 @@ Resources:
                     sleep 60
                     git clone https://github.com/shimaa829/Udacity-Capstone-Project-
                     cd Udacity-Capstone-Project-/
-                    kubectl apply -f kubernetes/deployment.yml
-                    kubectl apply -f kubernetes/service.yml
+                    ./kubernetes/run-kubernetes.sh
+                  
 
             ImageId: ami-0bcc094591f354be2 
             KeyName: kube-key
